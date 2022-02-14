@@ -47,7 +47,7 @@ const readCsvMetadata = (filename) => {
   return records;
 };
 
-const generateMetadata = (dirname, gifsCID, mp4sCID) => {
+const generateMetadata = (dirname, imageCID, mp4sCID) => {
   if (!fs.existsSync(metadataDir)) {
     fs.mkdirSync(metadataDir);
   }
@@ -57,32 +57,49 @@ const generateMetadata = (dirname, gifsCID, mp4sCID) => {
   console.log("Found %d ducks", ducks.length);
   ducks.forEach(function (duck, i) {
     let formattedDuck = {
-      name: `Flying Formation #${i + 1}`,
-      description:
-        'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes. Featuring a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.',
-      animation_url: `https://ipfs.io/ipfs/${mp4sCID}/NFT_12.mp4`,
-      image: `https://ipfs.io/ipfs/${gifsCID}/${duck["image"]}.png`,
+      name: `Flying Formations #${i + 1}`,
+      image: `ipfs://${imageCID}/${duck["image"]}.png`,
+      animation_url: `https://ducksofafeather.mypinata.cloud/ipfs/${mp4sCID}/${duck["image"]}.mp4`,
       external_url: "https://ducksofafeather.xyz",
       background_color: "000000",
       attributes: [
         {
           trait_type: "Stripes",
-          value: true,
+          value: duck["stripes"] == "Y" ? "YES" : "NO",
         },
         {
           trait_type: "Background Color",
           value: duck["color"],
         },
-        {
-          trait_type: "Shoe Size",
-          value: duck["shoe size"],
-        },
-        {
-          trait_type: "Air Max 1",
-          value: "AVAILABLE FOR REDEMPTION",
-        },
       ],
     };
+    let sneakerDuck = formattedDuck;
+    sneakerDuck.description =
+      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.\n\nFeaturing a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.';
+    sneakerDuck.attributes.concat([
+      {
+        trait_type: "Shoe Size",
+        value: duck["shoe size"],
+      },
+      {
+        trait_type: "Air Max 1",
+        value: "AVAILABLE",
+      },
+    ]);
+
+    let standardDuck = formattedDuck;
+    standardDuck.description =
+      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.';
+    standardDuck.attributes.concat([
+      {
+        trait_type: "Shoe Size",
+        value: duck["shoe size"],
+      },
+      {
+        trait_type: "Air Max 1",
+        value: "AVAILABLE",
+      },
+    ]);
     fs.writeFileSync(`${metadataDir}/${i + 1}`, JSON.stringify(formattedDuck));
   });
 };

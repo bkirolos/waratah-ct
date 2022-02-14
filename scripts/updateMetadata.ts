@@ -1,5 +1,6 @@
 import { ethers } from "hardhat";
 import fs from "fs";
+import { WaratahToken } from "../typechain-types/WaratahToken";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -8,16 +9,17 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const token = await ethers.getContract("Knots");
+  const token = (await ethers.getContract("WaratahToken")) as WaratahToken;
 
   let buffer = fs.readFileSync("ipfs/metadata.cid");
   let cid = buffer.toString().trim();
 
   let tokenMetadata = `ipfs://${cid}/`;
 
-  console.log("Knots contract address:", token.address);
+  console.log("WaratahToken contract address:", token.address);
 
   await token.updateBaseURI(tokenMetadata);
+  await token.updateSneakerBaseURI(tokenMetadata);
   console.log("Metadata updated to: " + tokenMetadata);
 }
 
