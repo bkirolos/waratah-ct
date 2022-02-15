@@ -1,7 +1,16 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
+//    ___   __          _                   
+//   / _/  / /  __ __  (_)  ___   ___ _    
+//  / _/  / /  / // / / /  / _ \ / _ `/    
+// /_/   /_/   \_, / /_/  /_//_/ \_, /     
+//            /___/             /___/                                                               
+//    ___                          __    _                 
+//   / _/ ___   ____  __ _  ___ _ / /_  (_) ___   ___   ___
+//  / _/ / _ \ / __/ /  ' \/ _ `// __/ / / / _ \ / _ \ (_-<
+// /_/   \___//_/   /_/_/_/\_,_/ \__/ /_/  \___//_//_//___/
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -11,7 +20,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "hardhat/console.sol";
 
-contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
+contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     using SafeMath for uint;
     using Strings for uint256;
 
@@ -19,7 +28,7 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
       uint tokenId,
       address recipient,
       uint paid,
-      uint teamParticipantsReceives,
+      uint footballTeamReceives,
       uint ducksReceives,
       uint divisionStreetReceives
     );
@@ -30,15 +39,17 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
     );
 
     // uint eth = 1e18 // WETH
-    uint eth = 1e16; // WETH (FOR TESTING)
     // uint hrs = 1 hours; // HOURS (in seconds)
+
+    // SMALLER AMOUNT & SHORTER DURATION FOR TESTING
+    uint eth = 1e16; // WETH
     uint hrs = 1 minutes; // HOURS (in seconds)
 
     uint price1 = 125*eth/10; // 12.5 ETH
-    uint stage1 = 2*hrs; // 2 hours
+    uint stage1 = 3*hrs; // 3 hours
 
     uint price2 = 5*eth; // 5 ETH
-    uint stage2 = 10*hrs; // 10 hours
+    uint stage2 = 9*hrs; // 9 hours
 
     uint floorPrice = 1*eth; // 1 ETH
 
@@ -51,9 +62,14 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
     string sneakerBaseURI;
     string standardBaseURI;
 
+    struct Premint {
+      address addr;
+      uint tokenId;
+    }
+
     mapping (uint => address) public sneakerRedeemedBy;
 
-    address payable teamParticipantsWallet;
+    address payable footballTeamWallet;
     address payable ducksWallet;
     address payable divisionStreetWallet;
 
@@ -67,24 +83,34 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
       uint _redeemStartsAt,
       string memory _sneakerBaseURI,
       string memory _standardBaseURI,
-      address payable _teamParticipantsWallet,
+      Premint[] memory premintEntries,
+      address payable _footballTeamWallet,
       address payable _ducksWallet,
       address payable _divisionStreetWallet
-    ) ERC721("Waratah", "WRT") {
+    ) ERC721("Flying Formations", "FFT") {
       saleStartsAt = _saleStartsAt;
       redeemStartsAt = _redeemStartsAt;
 
+      // Set baseURIs for pre-redeem, and
+      // post-redeem NFTs
       sneakerBaseURI = _sneakerBaseURI;
       standardBaseURI = _standardBaseURI;
 
-      teamParticipantsWallet = _teamParticipantsWallet;
+      // Premint tokens for whitelist token recipients
+      for(uint i; i < premintEntries.length; i++){
+        _mint(premintEntries[i].addr, premintEntries[i].tokenId);
+        sneakerRedeemedBy[premintEntries[i].tokenId] = premintEntries[i].addr;
+      }
+
+      // Set team wallets
+      footballTeamWallet = _footballTeamWallet;
       ducksWallet = _ducksWallet;
       divisionStreetWallet = _divisionStreetWallet;
     }
 
     function getPrice() public view returns (uint) {
       console.log("Getting price...");
-        require(block.timestamp >= saleStartsAt, "auction has not started");
+        require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
 
         uint elapsedTime = block.timestamp - saleStartsAt;
 
@@ -105,33 +131,38 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
 
       uint price = getPrice();
 
-      require(msg.value >= price, "FlyingFormations: nsufficient funds sent, please check current price");
+      require(msg.value >= price, "FlyingFormations: insufficient funds sent, please check current price");
 
       _mint(recipient, tokenId);
 
-      uint teamParticipantsReceives = msg.value.mul(TEAM_SPLIT).div(10000);
+      uint footballTeamReceives = msg.value.mul(TEAM_SPLIT).div(10000);
       uint ducksReceives = msg.value.mul(DUCKS_SPLIT).div(10000);
       uint divisionStreetReceives = msg.value
-        .sub(teamParticipantsReceives)
+        .sub(footballTeamReceives)
         .sub(ducksReceives);
 
-      teamParticipantsWallet.transfer(teamParticipantsReceives);
+      footballTeamWallet.transfer(footballTeamReceives);
       ducksWallet.transfer(ducksReceives);
       divisionStreetWallet.transfer(divisionStreetReceives);
 
-      emit TokenBought(tokenId, recipient, price, teamParticipantsReceives, ducksReceives, divisionStreetReceives);
+      emit TokenBought(tokenId, recipient, price, footballTeamReceives, ducksReceives, divisionStreetReceives);
     }
 
+    // Redeem functionality for claiming Nike Air Max 1 OU Edition
     function redeem(uint tokenId) public {
       require(
         block.timestamp >= redeemStartsAt,
         "FlyingFormations: redeem window has not opened");
       require(
+        sneakerRedeemedBy[tokenId] == address(0x0),
+        "FlyingFormations: token has already beened redeemed"
+      );
+      require(
         msg.sender == ownerOf(tokenId),
-        "ERC721Burnable: caller is not owner nor approved"
+        "FlyingFormations: caller is not owner"
       );
 
-        sneakerRedeemedBy[tokenId] = ownerOf(tokenId);
+      sneakerRedeemedBy[tokenId] = ownerOf(tokenId);
       emit SneakerRedeemed(tokenId, msg.sender);
     }
 
@@ -141,16 +172,16 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
       }
     }
 
-    function updateTeamParticipantsWallet(address payable _primaryWallet) public onlyOwner {
-        teamParticipantsWallet = _primaryWallet;
+    function updateFootballTeamWallet(address payable _wallet) public onlyOwner {
+        footballTeamWallet = _wallet;
     }
 
-    function updateDucksWallet(address payable _ducksWallet) public onlyOwner {
-        ducksWallet = _ducksWallet;
+    function updateDucksWallet(address payable _wallet) public onlyOwner {
+        ducksWallet = _wallet;
     }
 
-    function updateDivisionStreetWallet(address payable _divisionStreetWallet) public onlyOwner {
-        divisionStreetWallet = _divisionStreetWallet;
+    function updateDivisionStreetWallet(address payable _wallet) public onlyOwner {
+        divisionStreetWallet = _wallet;
     }
 
     function updateBaseURI(string calldata __baseURI) public onlyOwner {
@@ -160,24 +191,14 @@ contract WaratahToken is ERC721Enumerable, Ownable, Pausable {
       sneakerBaseURI = __baseURI;
     }
 
-     /**
-     * @dev See {IERC721Metadata-tokenURI}.
-     */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
-        string memory baseURI;
-
         if (sneakerRedeemedBy[tokenId] == address(0x0)){
-          baseURI = standardBaseURI;
+          return string(abi.encodePacked(sneakerBaseURI, tokenId.toString(), ".json"));
         } else {
-          baseURI = sneakerBaseURI;
+          return string(abi.encodePacked(standardBaseURI, tokenId.toString(), ".json"));
         }
 
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "";
-    }
-
-    function _baseURI() internal view override returns (string memory) {
-      return sneakerBaseURI;
     }
 }

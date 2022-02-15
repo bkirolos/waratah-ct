@@ -17,7 +17,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     logDeployInfo(saleStartsAt, redeemStartsAt);
 
-    await deploy("WaratahToken", {
+    await deploy("FlyingFormations", {
       from: deployer,
       args: [
         saleStartsAt,
@@ -34,11 +34,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 };
 
 function logDeployInfo(saleStartsAt: number, redeemStartsAt: number) {
-  console.log("Launching Knots contract with fields...");
+  console.log("Launching token contract with fields...");
   console.log(" . Sale starts at: %s", new Date(saleStartsAt * 1000));
   console.log(" . Redeem starts at: %s", new Date(redeemStartsAt * 1000));
 }
 
-module.exports.tags = ["WaratahToken"];
+module.exports.tags = ["FlyingFormations"];
 
 export default func;

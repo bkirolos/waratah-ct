@@ -1,11 +1,11 @@
-import KnotsRinkeby from "./deployments/rinkeby/Knots.json";
-import KnotsLocal from "./deployments/localhost/Knots.json";
-import { Knots__factory } from "./typechain-types/factories/Knots__factory";
+import FlyingFormationsRinkeby from "./deployments/rinkeby/FlyingFormations.json";
+import FlyingFormationsLocal from "./deployments/localhost/FlyingFormations.json";
+import { FlyingFormations__factory } from "./typechain-types/factories/FlyingFormations__factory";
 
 export const Knots = {
   address: {
-    rinkeby: KnotsRinkeby.address,
-    localhost: KnotsLocal.address,
+    rinkeby: FlyingFormationsRinkeby.address,
+    localhost: FlyingFormationsLocal.address,
   },
-  factory: Knots__factory,
+  factory: FlyingFormations__factory,
 };

@@ -14,8 +14,8 @@ export type { IERC721 } from "./IERC721";
 export type { IERC721Receiver } from "./IERC721Receiver";
 export type { ERC165 } from "./ERC165";
 export type { IERC165 } from "./IERC165";
+export type { FlyingFormations } from "./FlyingFormations";
 export type { Knots } from "./Knots";
-export type { WaratahToken } from "./WaratahToken";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
 export { Pausable__factory } from "./factories/Pausable__factory";
@@ -30,5 +30,5 @@ export { IERC721__factory } from "./factories/IERC721__factory";
 export { IERC721Receiver__factory } from "./factories/IERC721Receiver__factory";
 export { ERC165__factory } from "./factories/ERC165__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";
+export { FlyingFormations__factory } from "./factories/FlyingFormations__factory";
 export { Knots__factory } from "./factories/Knots__factory";
-export { WaratahToken__factory } from "./factories/WaratahToken__factory";

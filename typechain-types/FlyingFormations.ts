@@ -18,8 +18,17 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface WaratahTokenInterface extends utils.Interface {
-  contractName: "WaratahToken";
+export declare namespace FlyingFormations {
+  export type PremintStruct = { addr: string; tokenId: BigNumberish };
+
+  export type PremintStructOutput = [string, BigNumber] & {
+    addr: string;
+    tokenId: BigNumber;
+  };
+}
+
+export interface FlyingFormationsInterface extends utils.Interface {
+  contractName: "FlyingFormations";
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -48,8 +57,8 @@ export interface WaratahTokenInterface extends utils.Interface {
     "updateBaseURI(string)": FunctionFragment;
     "updateDivisionStreetWallet(address)": FunctionFragment;
     "updateDucksWallet(address)": FunctionFragment;
+    "updateFootballTeamWallet(address)": FunctionFragment;
     "updateSneakerBaseURI(string)": FunctionFragment;
-    "updateTeamParticipantsWallet(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -143,11 +152,11 @@ export interface WaratahTokenInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateSneakerBaseURI",
+    functionFragment: "updateFootballTeamWallet",
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateTeamParticipantsWallet",
+    functionFragment: "updateSneakerBaseURI",
     values: [string]
   ): string;
 
@@ -227,11 +236,11 @@ export interface WaratahTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateSneakerBaseURI",
+    functionFragment: "updateFootballTeamWallet",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateTeamParticipantsWallet",
+    functionFragment: "updateSneakerBaseURI",
     data: BytesLike
   ): Result;
 
@@ -295,7 +304,7 @@ export type TokenBoughtEvent = TypedEvent<
     tokenId: BigNumber;
     recipient: string;
     paid: BigNumber;
-    teamParticipantsReceives: BigNumber;
+    footballTeamReceives: BigNumber;
     ducksReceives: BigNumber;
     divisionStreetReceives: BigNumber;
   }
@@ -314,13 +323,13 @@ export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
 
-export interface WaratahToken extends BaseContract {
-  contractName: "WaratahToken";
+export interface FlyingFormations extends BaseContract {
+  contractName: "FlyingFormations";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: WaratahTokenInterface;
+  interface: FlyingFormationsInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -462,22 +471,22 @@ export interface WaratahToken extends BaseContract {
     ): Promise<ContractTransaction>;
 
     updateDivisionStreetWallet(
-      _divisionStreetWallet: string,
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     updateDucksWallet(
-      _ducksWallet: string,
+      _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateFootballTeamWallet(
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     updateSneakerBaseURI(
       __baseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    updateTeamParticipantsWallet(
-      _primaryWallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -594,22 +603,22 @@ export interface WaratahToken extends BaseContract {
   ): Promise<ContractTransaction>;
 
   updateDivisionStreetWallet(
-    _divisionStreetWallet: string,
+    _wallet: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   updateDucksWallet(
-    _ducksWallet: string,
+    _wallet: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateFootballTeamWallet(
+    _wallet: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   updateSneakerBaseURI(
     __baseURI: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  updateTeamParticipantsWallet(
-    _primaryWallet: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -718,22 +727,22 @@ export interface WaratahToken extends BaseContract {
     updateBaseURI(__baseURI: string, overrides?: CallOverrides): Promise<void>;
 
     updateDivisionStreetWallet(
-      _divisionStreetWallet: string,
+      _wallet: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     updateDucksWallet(
-      _ducksWallet: string,
+      _wallet: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateFootballTeamWallet(
+      _wallet: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     updateSneakerBaseURI(
       __baseURI: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    updateTeamParticipantsWallet(
-      _primaryWallet: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -786,7 +795,7 @@ export interface WaratahToken extends BaseContract {
       tokenId?: null,
       recipient?: null,
       paid?: null,
-      teamParticipantsReceives?: null,
+      footballTeamReceives?: null,
       ducksReceives?: null,
       divisionStreetReceives?: null
     ): TokenBoughtEventFilter;
@@ -794,7 +803,7 @@ export interface WaratahToken extends BaseContract {
       tokenId?: null,
       recipient?: null,
       paid?: null,
-      teamParticipantsReceives?: null,
+      footballTeamReceives?: null,
       ducksReceives?: null,
       divisionStreetReceives?: null
     ): TokenBoughtEventFilter;
@@ -933,22 +942,22 @@ export interface WaratahToken extends BaseContract {
     ): Promise<BigNumber>;
 
     updateDivisionStreetWallet(
-      _divisionStreetWallet: string,
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     updateDucksWallet(
-      _ducksWallet: string,
+      _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateFootballTeamWallet(
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     updateSneakerBaseURI(
       __baseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    updateTeamParticipantsWallet(
-      _primaryWallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -1075,22 +1084,22 @@ export interface WaratahToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     updateDivisionStreetWallet(
-      _divisionStreetWallet: string,
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     updateDucksWallet(
-      _ducksWallet: string,
+      _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateFootballTeamWallet(
+      _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     updateSneakerBaseURI(
       __baseURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updateTeamParticipantsWallet(
-      _primaryWallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
