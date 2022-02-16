@@ -191,8 +191,13 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     function updateBaseURI(string calldata __baseURI) public onlyOwner {
       standardBaseURI = __baseURI;
     }
+
     function updateSneakerBaseURI(string calldata __baseURI) public onlyOwner {
       sneakerBaseURI = __baseURI;
+    }
+
+    function updateSaleStartsAt(uint _saleStartsAt) public onlyOwner {
+      saleStartsAt = _saleStartsAt;
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
