@@ -166,10 +166,14 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       emit SneakerRedeemed(tokenId, msg.sender);
     }
 
-    function getAllTokens() public view returns (uint[] memory allTokens) {
-      for(uint i; i < totalSupply(); i++){
-        allTokens[i] = tokenByIndex(i);
+    function getAllTokens() public view returns (uint[] memory) {
+      uint n = totalSupply();
+      uint[] memory tokenIds = new uint[](n);
+
+      for(uint i = 0; i < n; i++){
+        tokenIds[i] = tokenByIndex(i);
       }
+      return tokenIds;
     }
 
     function updateFootballTeamWallet(address payable _wallet) public onlyOwner {

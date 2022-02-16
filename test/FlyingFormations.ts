@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import chai from "chai";
-import { WaratahToken } from "../typechain-types/WaratahToken";
-import WaratahTokenArtifact from "../artifacts/contracts/WaratahToken.sol/WaratahToken.json";
+import { FlyingFormations } from "../typechain-types/FlyingFormations";
+import FlyingFormationsArtifact from "../artifacts/contracts/FlyingFormations.sol/FlyingFormations.json";
 import { deployContract } from "ethereum-waffle";
 import { utils } from "ethers";
 
@@ -12,20 +12,23 @@ const { expect } = chai;
 describe("WaratahToken", function () {
   this.timeout(30000);
   describe("basic minting", async () => {
-    let token: WaratahToken;
+    let token: FlyingFormations;
 
     beforeEach(async () => {
       const [deployer, addr1, addr2] = await ethers.getSigners();
       let saleStartsAt = Math.floor(Date.now() / 1000);
       let redeemStartsAt = Math.floor(Date.now() / 1000);
 
-      token = (await deployContract(deployer, WaratahTokenArtifact, [
+      token = (await deployContract(deployer, FlyingFormationsArtifact, [
         saleStartsAt,
         redeemStartsAt,
+        "ipfs://SNEAKER_HASH",
+        "ipfs://STANDARD_HASH",
+        [],
         deployer.address,
         deployer.address,
         deployer.address,
-      ])) as WaratahToken;
+      ])) as FlyingFormations;
     });
     it("should have minted 0 team tokens to the deployer", async () => {
       const [deployer, addr1, addr2] = await ethers.getSigners();
@@ -45,7 +48,7 @@ describe("WaratahToken", function () {
       console.log("Latest price: %s", latestPrice);
       let latestDeductionRate = latestPrice.sub(prevPrice);
 
-      expect(latestDeductionRate).to.equal(-625000000000000);
+      expect(latestDeductionRate).to.equal(-416666666666666);
 
       await blockSleep(1);
       prevPrice = latestPrice;
@@ -72,6 +75,9 @@ describe("WaratahToken", function () {
       await token.buy(deployer.address, 112, { value: latestPrice });
 
       expect(await token.balanceOf(deployer.address)).to.eq(1);
+      let allTokens = await token.getAllTokens();
+      expect(allTokens.length).to.eq(1);
+      expect(allTokens[0].toNumber()).to.eq(112);
     });
   });
 });

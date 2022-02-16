@@ -365,9 +365,7 @@ export interface FlyingFormations extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getAllTokens(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]] & { allTokens: BigNumber[] }>;
+    getAllTokens(overrides?: CallOverrides): Promise<[BigNumber[]]>;
 
     getApproved(
       tokenId: BigNumberish,
