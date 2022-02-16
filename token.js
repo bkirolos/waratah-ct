@@ -1,5 +1,5 @@
-import TokenRinkeby from "./deployments/rinkeby/WaratahToken.json";
-import TokenLocal from "./deployments/localhost/WaratahToken.json";
+import TokenRinkeby from "./deployments/rinkeby/FlyingFormations.json";
+import TokenLocal from "./deployments/localhost/FlyingFormations.json";
 
 export const Token = {
   address: {
