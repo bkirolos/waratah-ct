@@ -24,6 +24,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         redeemStartsAt,
         tokenMetadata,
         tokenMetadata,
+        [],
         deployer,
         deployer,
         deployer,

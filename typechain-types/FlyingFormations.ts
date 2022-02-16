@@ -58,6 +58,7 @@ export interface FlyingFormationsInterface extends utils.Interface {
     "updateDivisionStreetWallet(address)": FunctionFragment;
     "updateDucksWallet(address)": FunctionFragment;
     "updateFootballTeamWallet(address)": FunctionFragment;
+    "updateSaleStartsAt(uint256)": FunctionFragment;
     "updateSneakerBaseURI(string)": FunctionFragment;
   };
 
@@ -156,6 +157,10 @@ export interface FlyingFormationsInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateSaleStartsAt",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateSneakerBaseURI",
     values: [string]
   ): string;
@@ -237,6 +242,10 @@ export interface FlyingFormationsInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateFootballTeamWallet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateSaleStartsAt",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -483,6 +492,11 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    updateSaleStartsAt(
+      _saleStartsAt: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     updateSneakerBaseURI(
       __baseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -615,6 +629,11 @@ export interface FlyingFormations extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateSaleStartsAt(
+    _saleStartsAt: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   updateSneakerBaseURI(
     __baseURI: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -736,6 +755,11 @@ export interface FlyingFormations extends BaseContract {
 
     updateFootballTeamWallet(
       _wallet: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateSaleStartsAt(
+      _saleStartsAt: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -954,6 +978,11 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    updateSaleStartsAt(
+      _saleStartsAt: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     updateSneakerBaseURI(
       __baseURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1093,6 +1122,11 @@ export interface FlyingFormations extends BaseContract {
 
     updateFootballTeamWallet(
       _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateSaleStartsAt(
+      _saleStartsAt: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
