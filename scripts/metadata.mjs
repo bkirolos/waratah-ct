@@ -47,9 +47,17 @@ const readCsvMetadata = (filename) => {
   return records;
 };
 
-const generateMetadata = (dirname, imageCID, mp4sCID) => {
-  if (!fs.existsSync(metadataDir)) {
-    fs.mkdirSync(metadataDir);
+const generateMetadata = (
+  sneakerDirname,
+  standardDirname,
+  imageCID,
+  mp4sCID
+) => {
+  if (!fs.existsSync(sneakerDirname)) {
+    fs.mkdirSync(sneakerDirname + "");
+  }
+  if (!fs.existsSync(standardDirname)) {
+    fs.mkdirSync(standardDirname + "");
   }
 
   let ducks = readCsvMetadata("ipfs/ducks-meta.csv");
@@ -73,10 +81,10 @@ const generateMetadata = (dirname, imageCID, mp4sCID) => {
         },
       ],
     };
-    let sneakerDuck = formattedDuck;
+    let sneakerDuck = { ...formattedDuck };
     sneakerDuck.description =
-      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.\n\nFeaturing a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.';
-    sneakerDuck.attributes.concat([
+      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.\\n\\nFeaturing a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.';
+    sneakerDuck.attributes = sneakerDuck.attributes.concat([
       {
         trait_type: "Shoe Size",
         value: duck["shoe size"],
@@ -87,26 +95,39 @@ const generateMetadata = (dirname, imageCID, mp4sCID) => {
       },
     ]);
 
-    let standardDuck = formattedDuck;
+    let standardDuck = { ...formattedDuck };
     standardDuck.description =
       'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.';
-    standardDuck.attributes.concat([
+    standardDuck.attributes = standardDuck.attributes.concat([
       {
         trait_type: "Shoe Size",
         value: duck["shoe size"],
       },
       {
         trait_type: "Air Max 1",
-        value: "AVAILABLE",
+        value: "REDEEMED",
       },
     ]);
-    fs.writeFileSync(`${metadataDir}/${i + 1}`, JSON.stringify(formattedDuck));
+
+    // write metadata for sneaker duck
+    fs.writeFileSync(
+      `${sneakerMetadataDir}/${i + 1}.json`,
+      JSON.stringify(sneakerDuck)
+    );
+
+    // write metadata for standard duck
+    fs.writeFileSync(
+      `${standardMetadataDir}/${i + 1}.json`,
+      JSON.stringify(standardDuck)
+    );
   });
 };
 
 let pngsCID = await getCIDOrPin("ipfs/pngs", "Duck PNGs");
 let mp4sCID = await getCIDOrPin("ipfs/mp4s", "Duck MP4s");
 
-let metadataDir = "ipfs/metadata";
-generateMetadata(metadataDir, pngsCID, mp4sCID);
-await getCIDOrPin(metadataDir, "Duck Metadata");
+let sneakerMetadataDir = "ipfs/metadata-sneaker";
+let standardMetadataDir = "ipfs/metadata-standard";
+generateMetadata(sneakerMetadataDir, standardMetadataDir, pngsCID, mp4sCID);
+await getCIDOrPin(sneakerMetadataDir, "Duck Sneaker Metadata");
+await getCIDOrPin(standardMetadataDir, "Duck Standard Metadata");

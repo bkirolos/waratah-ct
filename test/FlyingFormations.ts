@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, deployments, getNamedAccounts } from "hardhat";
 import chai from "chai";
 import { FlyingFormations } from "../typechain-types/FlyingFormations";
 import FlyingFormationsArtifact from "../artifacts/contracts/FlyingFormations.sol/FlyingFormations.json";
@@ -9,34 +9,43 @@ const { parseUnits } = ethers.utils;
 
 const { expect } = chai;
 
-describe("WaratahToken", function () {
+describe("FlyingFormations", function () {
   this.timeout(30000);
   describe("basic minting", async () => {
     let token: FlyingFormations;
 
-    beforeEach(async () => {
-      const [deployer, addr1, addr2] = await ethers.getSigners();
-      let saleStartsAt = Math.floor(Date.now() / 1000);
-      let redeemStartsAt = Math.floor(Date.now() / 1000);
+    //beforeEach(async () => {
+    //  const [deployer, addr1, addr2] = await ethers.getSigners();
+    //  let saleStartsAt = Math.floor(Date.now() / 1000);
+    //  let redeemStartsAt = Math.floor(Date.now() / 1000);
 
-      token = (await deployContract(deployer, FlyingFormationsArtifact, [
-        saleStartsAt,
-        redeemStartsAt,
-        "ipfs://SNEAKER_HASH",
-        "ipfs://STANDARD_HASH",
-        [],
-        deployer.address,
-        deployer.address,
-        deployer.address,
-      ])) as FlyingFormations;
-    });
+    //  token = (await deployContract(deployer, FlyingFormationsArtifact, [
+    //    saleStartsAt,
+    //    "ipfs://SNEAKER_HASH",
+    //    "ipfs://STANDARD_HASH",
+    //    [],
+    //    deployer.address,
+    //    deployer.address,
+    //    deployer.address,
+    //  ])) as FlyingFormations;
+    //});
     it("should have minted 0 team tokens to the deployer", async () => {
-      const [deployer, addr1, addr2] = await ethers.getSigners();
+      await deployments.fixture(["FlyingFormations"]);
+      const { deployer } = await getNamedAccounts();
+      token = await ethers.getContract("FlyingFormations", deployer);
 
-      expect(await token.balanceOf(deployer.address)).to.eq(0);
+      expect(await token.balanceOf(deployer)).to.eq(0);
     });
     it("should decrease in price as time goes on", async () => {
-      await blockSleep(5);
+      await deployments.fixture(["FlyingFormations"]);
+      const { deployer } = await getNamedAccounts();
+      token = await ethers.getContract("FlyingFormations", deployer);
+
+      await expect(token.getPrice()).to.be.revertedWith(
+        "FlyingFormations: auction has not started"
+      );
+
+      await blockSleep(20);
       let latestPrice = await token.getPrice();
       console.log("Latest price: %s", latestPrice);
 
@@ -68,16 +77,22 @@ describe("WaratahToken", function () {
       expect(latestDeductionRate.gte(prevDeductionRate)).to.be.true;
     });
     it("should allow for purchasing at a recently received price", async () => {
-      const [deployer, addr1, addr2] = await ethers.getSigners();
-      await blockSleep(5);
+      await deployments.fixture(["FlyingFormations"]);
+      const { deployer } = await getNamedAccounts();
+      token = await ethers.getContract("FlyingFormations", deployer);
+
+      await blockSleep(20);
       let latestPrice = await token.getPrice();
 
-      await token.buy(deployer.address, 112, { value: latestPrice });
+      await token.buy(deployer, 112, { value: latestPrice });
 
-      expect(await token.balanceOf(deployer.address)).to.eq(1);
+      expect(await token.balanceOf(deployer)).to.eq(1);
       let allTokens = await token.getAllTokens();
-      expect(allTokens.length).to.eq(1);
-      expect(allTokens[0].toNumber()).to.eq(112);
+      // should have 4 tokens total:
+      //  - 3 minted via whitelist
+      //  - 1 minted via test
+      expect(allTokens.length).to.eq(4);
+      expect(await token.ownerOf(112)).to.eq(deployer);
     });
   });
 });

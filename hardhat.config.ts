@@ -40,9 +40,12 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: 0,
-    primaryWallet: 1,
-    secondaryWallet: 2,
-    tertiaryWallet: 3,
+    footballTeamWallet: 1,
+    ducksWallet: 2,
+    divisionStWallet: 3,
+    wlWallet1: 4,
+    wlWallet2: 5,
+    wlWallet3: 6,
   },
 };
 

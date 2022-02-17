@@ -11,6 +11,8 @@ pragma solidity ^0.8.0;
 //   / _/ ___   ____  __ _  ___ _ / /_  (_) ___   ___   ___
 //  / _/ / _ \ / __/ /  ' \/ _ `// __/ / / / _ \ / _ \ (_-<
 // /_/   \___//_/   /_/_/_/\_,_/ \__/ /_/  \___//_//_//___/
+//
+//
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -56,13 +58,16 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     uint priceDeductionRate1 = (price1 - price2).div(stage1); // drop to 5.0 ETH at 2 hours
     uint priceDeductionRate2 = (price2 - floorPrice).div(stage2); // drop to 1.0 ETH at 12 hours
 
+    mapping (address => bool) hasPurchased;
+
     uint saleStartsAt;
-    uint redeemStartsAt;
+    bool redeemEnabled;
+    bool redeemExpired;
 
     string sneakerBaseURI;
     string standardBaseURI;
 
-    struct Premint {
+    struct PremintEntry {
       address addr;
       uint tokenId;
     }
@@ -80,16 +85,14 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     constructor(
       uint _saleStartsAt,
-      uint _redeemStartsAt,
       string memory _sneakerBaseURI,
       string memory _standardBaseURI,
-      Premint[] memory premintEntries,
+      PremintEntry[] memory premintEntries,
       address payable _footballTeamWallet,
       address payable _ducksWallet,
       address payable _divisionStreetWallet
     ) ERC721("Flying Formations", "FFT") {
       saleStartsAt = _saleStartsAt;
-      redeemStartsAt = _redeemStartsAt;
 
       // Set baseURIs for pre-redeem, and
       // post-redeem NFTs
@@ -109,25 +112,24 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     }
 
     function getPrice() public view returns (uint) {
-      console.log("Getting price...");
-        require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
+      require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
 
-        uint elapsedTime = block.timestamp - saleStartsAt;
+      uint elapsedTime = block.timestamp - saleStartsAt;
 
-        console.log("elapsed time is: %s", elapsedTime);
-
-        if (elapsedTime < stage1) {
-          return price1.sub(elapsedTime.mul(priceDeductionRate1));
-        } else if (elapsedTime < stage2) {
-          return price2.sub(elapsedTime.mul(priceDeductionRate2));
-        } else {
-          return floorPrice;
-        }
+      if (elapsedTime < stage1) {
+        return price1.sub(elapsedTime.mul(priceDeductionRate1));
+      } else if (elapsedTime < stage2) {
+        return price2.sub(elapsedTime.mul(priceDeductionRate2));
+      } else {
+        return floorPrice;
+      }
     }
 
     function buy(address recipient, uint tokenId) public payable {
+      require(!hasPurchased[msg.sender], "FlyingFormations: User has already bought one NFT");
+      require(msg.sender == tx.origin, "FlyingFormations: Account is not an EOA");
       require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
-      require(tokenId < MAX_TOKENS, "FlyingFormations: invalid tokenId");
+      require(tokenId <= MAX_TOKENS && tokenId > 0, "FlyingFormations: invalid tokenId");
 
       uint price = getPrice();
 
@@ -150,9 +152,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     // Redeem functionality for claiming Nike Air Max 1 OU Edition
     function redeem(uint tokenId) public {
-      require(
-        block.timestamp >= redeemStartsAt,
-        "FlyingFormations: redeem window has not opened");
+      require(redeemEnabled, "FlyingFormations: redeem is currently not enabled");
       require(
         sneakerRedeemedBy[tokenId] == address(0x0),
         "FlyingFormations: token has already beened redeemed"
@@ -177,15 +177,15 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     }
 
     function updateFootballTeamWallet(address payable _wallet) public onlyOwner {
-        footballTeamWallet = _wallet;
+      footballTeamWallet = _wallet;
     }
 
     function updateDucksWallet(address payable _wallet) public onlyOwner {
-        ducksWallet = _wallet;
+      ducksWallet = _wallet;
     }
 
     function updateDivisionStreetWallet(address payable _wallet) public onlyOwner {
-        divisionStreetWallet = _wallet;
+      divisionStreetWallet = _wallet;
     }
 
     function updateBaseURI(string calldata __baseURI) public onlyOwner {
@@ -200,14 +200,21 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       saleStartsAt = _saleStartsAt;
     }
 
+    function updateRedeemEnabled(bool _redeemEnabled) public onlyOwner {
+      redeemEnabled = _redeemEnabled;
+    }
+
+    function updateRedeemExpired(bool _redeemExpired) public onlyOwner {
+      redeemExpired = _redeemExpired;
+    }
+
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+      require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
-        if (sneakerRedeemedBy[tokenId] == address(0x0)){
-          return string(abi.encodePacked(sneakerBaseURI, tokenId.toString(), ".json"));
-        } else {
-          return string(abi.encodePacked(standardBaseURI, tokenId.toString(), ".json"));
-        }
-
+      if (redeemExpired || sneakerRedeemedBy[tokenId] != address(0x0)){
+        return string(abi.encodePacked(standardBaseURI, tokenId.toString(), ".json"));
+      } else {
+        return string(abi.encodePacked(sneakerBaseURI, tokenId.toString(), ".json"));
+      }
     }
 }
