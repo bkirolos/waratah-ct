@@ -132,11 +132,15 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       require(tokenId <= MAX_TOKENS && tokenId > 0, "FlyingFormations: invalid tokenId");
 
       uint price = getPrice();
-
       require(msg.value >= price, "FlyingFormations: insufficient funds sent, please check current price");
 
+      // mint token and set hasPurchased[msg.sender] to true so
+      // user cannot buy more than one
       _mint(recipient, tokenId);
+      hasPurchased[msg.sender] = true;
 
+
+      // distribute funds
       uint footballTeamReceives = msg.value.mul(TEAM_SPLIT).div(10000);
       uint ducksReceives = msg.value.mul(DUCKS_SPLIT).div(10000);
       uint divisionStreetReceives = msg.value
