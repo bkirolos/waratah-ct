@@ -19,9 +19,9 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace FlyingFormations {
-  export type PremintStruct = { addr: string; tokenId: BigNumberish };
+  export type PremintEntryStruct = { addr: string; tokenId: BigNumberish };
 
-  export type PremintStructOutput = [string, BigNumber] & {
+  export type PremintEntryStructOutput = [string, BigNumber] & {
     addr: string;
     tokenId: BigNumber;
   };
@@ -58,6 +58,8 @@ export interface FlyingFormationsInterface extends utils.Interface {
     "updateDivisionStreetWallet(address)": FunctionFragment;
     "updateDucksWallet(address)": FunctionFragment;
     "updateFootballTeamWallet(address)": FunctionFragment;
+    "updateRedeemEnabled(bool)": FunctionFragment;
+    "updateRedeemExpired(bool)": FunctionFragment;
     "updateSaleStartsAt(uint256)": FunctionFragment;
     "updateSneakerBaseURI(string)": FunctionFragment;
   };
@@ -157,6 +159,14 @@ export interface FlyingFormationsInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateRedeemEnabled",
+    values: [boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateRedeemExpired",
+    values: [boolean]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateSaleStartsAt",
     values: [BigNumberish]
   ): string;
@@ -242,6 +252,14 @@ export interface FlyingFormationsInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateFootballTeamWallet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateRedeemEnabled",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateRedeemExpired",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -492,6 +510,16 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    updateRedeemEnabled(
+      _redeemEnabled: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateRedeemExpired(
+      _redeemExpired: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     updateSaleStartsAt(
       _saleStartsAt: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -629,6 +657,16 @@ export interface FlyingFormations extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateRedeemEnabled(
+    _redeemEnabled: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateRedeemExpired(
+    _redeemExpired: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   updateSaleStartsAt(
     _saleStartsAt: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -755,6 +793,16 @@ export interface FlyingFormations extends BaseContract {
 
     updateFootballTeamWallet(
       _wallet: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateRedeemEnabled(
+      _redeemEnabled: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateRedeemExpired(
+      _redeemExpired: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -978,6 +1026,16 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    updateRedeemEnabled(
+      _redeemEnabled: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateRedeemExpired(
+      _redeemExpired: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     updateSaleStartsAt(
       _saleStartsAt: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1122,6 +1180,16 @@ export interface FlyingFormations extends BaseContract {
 
     updateFootballTeamWallet(
       _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateRedeemEnabled(
+      _redeemEnabled: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateRedeemExpired(
+      _redeemExpired: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
