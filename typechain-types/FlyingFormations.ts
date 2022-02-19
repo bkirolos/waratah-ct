@@ -55,7 +55,7 @@ export interface FlyingFormationsInterface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updateBaseURI(string)": FunctionFragment;
-    "updateDivisionStreetWallet(address)": FunctionFragment;
+    "updateDivisionStWallet(address)": FunctionFragment;
     "updateDucksWallet(address)": FunctionFragment;
     "updateFootballTeamWallet(address)": FunctionFragment;
     "updateRedeemEnabled(bool)": FunctionFragment;
@@ -147,7 +147,7 @@ export interface FlyingFormationsInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateDivisionStreetWallet",
+    functionFragment: "updateDivisionStWallet",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -243,7 +243,7 @@ export interface FlyingFormationsInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateDivisionStreetWallet",
+    functionFragment: "updateDivisionStWallet",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -333,7 +333,7 @@ export type TokenBoughtEvent = TypedEvent<
     paid: BigNumber;
     footballTeamReceives: BigNumber;
     ducksReceives: BigNumber;
-    divisionStreetReceives: BigNumber;
+    divisionStReceives: BigNumber;
   }
 >;
 
@@ -495,7 +495,7 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    updateDivisionStreetWallet(
+    updateDivisionStWallet(
       _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -642,7 +642,7 @@ export interface FlyingFormations extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  updateDivisionStreetWallet(
+  updateDivisionStWallet(
     _wallet: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -781,7 +781,7 @@ export interface FlyingFormations extends BaseContract {
 
     updateBaseURI(__baseURI: string, overrides?: CallOverrides): Promise<void>;
 
-    updateDivisionStreetWallet(
+    updateDivisionStWallet(
       _wallet: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -867,7 +867,7 @@ export interface FlyingFormations extends BaseContract {
       paid?: null,
       footballTeamReceives?: null,
       ducksReceives?: null,
-      divisionStreetReceives?: null
+      divisionStReceives?: null
     ): TokenBoughtEventFilter;
     TokenBought(
       tokenId?: null,
@@ -875,7 +875,7 @@ export interface FlyingFormations extends BaseContract {
       paid?: null,
       footballTeamReceives?: null,
       ducksReceives?: null,
-      divisionStreetReceives?: null
+      divisionStReceives?: null
     ): TokenBoughtEventFilter;
 
     "Transfer(address,address,uint256)"(
@@ -1011,7 +1011,7 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    updateDivisionStreetWallet(
+    updateDivisionStWallet(
       _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1168,7 +1168,7 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateDivisionStreetWallet(
+    updateDivisionStWallet(
       _wallet: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

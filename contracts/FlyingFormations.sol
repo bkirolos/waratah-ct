@@ -32,7 +32,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       uint paid,
       uint footballTeamReceives,
       uint ducksReceives,
-      uint divisionStreetReceives
+      uint divisionStReceives
     );
 
     event SneakerRedeemed(
@@ -44,19 +44,19 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     // uint hrs = 1 hours; // HOURS (in seconds)
 
     // SMALLER AMOUNT & SHORTER DURATION FOR TESTING
-    uint eth = 1e16; // WETH
-    uint hrs = 1 minutes; // HOURS (in seconds)
+    uint constant eth = 1e16; // WETH
+    uint constant hrs = 1 minutes; // HOURS (in seconds)
 
-    uint price1 = 125*eth/10; // 12.5 ETH
-    uint stage1 = 3*hrs; // 3 hours
+    uint constant price1 = 125*eth/10; // 12.5 ETH
+    uint constant stage1 = 3*hrs; // 3 hours
 
-    uint price2 = 5*eth; // 5 ETH
-    uint stage2 = 9*hrs; // 9 hours
+    uint constant price2 = 5*eth; // 5 ETH
+    uint constant stage2 = 9*hrs; // 9 hours
 
-    uint floorPrice = 1*eth; // 1 ETH
+    uint constant floorPrice = 1*eth; // 1 ETH
 
-    uint priceDeductionRate1 = (price1 - price2).div(stage1); // drop to 5.0 ETH at 2 hours
-    uint priceDeductionRate2 = (price2 - floorPrice).div(stage2); // drop to 1.0 ETH at 12 hours
+    uint constant priceDeductionRate1 = (price1 - price2)/stage1; // drop to 5.0 ETH at 2 hours
+    uint constant priceDeductionRate2 = (price2 - floorPrice)/stage2; // drop to 1.0 ETH at 12 hours
 
     mapping (address => bool) hasPurchased;
 
@@ -76,7 +76,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     address payable footballTeamWallet;
     address payable ducksWallet;
-    address payable divisionStreetWallet;
+    address payable divisionStWallet;
 
     uint constant TEAM_SPLIT = 6750;
     uint constant DUCKS_SPLIT = 1000;
@@ -90,7 +90,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       PremintEntry[] memory premintEntries,
       address payable _footballTeamWallet,
       address payable _ducksWallet,
-      address payable _divisionStreetWallet
+      address payable _divisionStWallet
     ) ERC721("Flying Formations", "FFT") {
       saleStartsAt = _saleStartsAt;
 
@@ -108,7 +108,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       // Set team wallets
       footballTeamWallet = _footballTeamWallet;
       ducksWallet = _ducksWallet;
-      divisionStreetWallet = _divisionStreetWallet;
+      divisionStWallet = _divisionStWallet;
     }
 
     function getPrice() public view returns (uint) {
@@ -143,20 +143,24 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       // distribute funds
       uint footballTeamReceives = msg.value.mul(TEAM_SPLIT).div(10000);
       uint ducksReceives = msg.value.mul(DUCKS_SPLIT).div(10000);
-      uint divisionStreetReceives = msg.value
+      uint divisionStReceives = msg.value
         .sub(footballTeamReceives)
         .sub(ducksReceives);
 
-      footballTeamWallet.transfer(footballTeamReceives);
-      ducksWallet.transfer(ducksReceives);
-      divisionStreetWallet.transfer(divisionStreetReceives);
+      (bool success, ) = footballTeamWallet.call{value: footballTeamReceives}("");
+      require(success, "FlyingFormations: footballTeamWallet failed to receive");
+      (success, ) = ducksWallet.call{value: ducksReceives}("");
+      require(success, "FlyingFormations: ducksWallet failed to receive");
+      (success, ) = divisionStWallet.call{value: divisionStReceives}("");
+      require(success, "FlyingFormations: divisionStWallet failed to receive");
 
-      emit TokenBought(tokenId, recipient, price, footballTeamReceives, ducksReceives, divisionStreetReceives);
+      emit TokenBought(tokenId, recipient, price, footballTeamReceives, ducksReceives, divisionStReceives);
     }
 
     // Redeem functionality for claiming Nike Air Max 1 OU Edition
     function redeem(uint tokenId) public {
       require(redeemEnabled, "FlyingFormations: redeem is currently not enabled");
+      require(!redeemExpired, "FlyingFormations: redeem window has expired");
       require(
         sneakerRedeemedBy[tokenId] == address(0x0),
         "FlyingFormations: token has already beened redeemed"
@@ -188,8 +192,8 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       ducksWallet = _wallet;
     }
 
-    function updateDivisionStreetWallet(address payable _wallet) public onlyOwner {
-      divisionStreetWallet = _wallet;
+    function updateDivisionStWallet(address payable _wallet) public onlyOwner {
+      divisionStWallet = _wallet;
     }
 
     function updateBaseURI(string calldata __baseURI) public onlyOwner {
@@ -210,6 +214,14 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     function updateRedeemExpired(bool _redeemExpired) public onlyOwner {
       redeemExpired = _redeemExpired;
+    }
+
+    function updatePaused(bool _paused) public onlyOwner {
+      if (_paused) {
+        _pause();
+      } else {
+        _unpause();
+      }
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {

@@ -3,9 +3,6 @@
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
 export type { Pausable } from "./Pausable";
-export type { ERC20 } from "./ERC20";
-export type { IERC20Metadata } from "./IERC20Metadata";
-export type { IERC20 } from "./IERC20";
 export type { ERC721 } from "./ERC721";
 export type { ERC721Enumerable } from "./ERC721Enumerable";
 export type { IERC721Enumerable } from "./IERC721Enumerable";
@@ -15,13 +12,9 @@ export type { IERC721Receiver } from "./IERC721Receiver";
 export type { ERC165 } from "./ERC165";
 export type { IERC165 } from "./IERC165";
 export type { FlyingFormations } from "./FlyingFormations";
-export type { Knots } from "./Knots";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
 export { Pausable__factory } from "./factories/Pausable__factory";
-export { ERC20__factory } from "./factories/ERC20__factory";
-export { IERC20Metadata__factory } from "./factories/IERC20Metadata__factory";
-export { IERC20__factory } from "./factories/IERC20__factory";
 export { ERC721__factory } from "./factories/ERC721__factory";
 export { ERC721Enumerable__factory } from "./factories/ERC721Enumerable__factory";
 export { IERC721Enumerable__factory } from "./factories/IERC721Enumerable__factory";
@@ -31,4 +24,3 @@ export { IERC721Receiver__factory } from "./factories/IERC721Receiver__factory";
 export { ERC165__factory } from "./factories/ERC165__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";
 export { FlyingFormations__factory } from "./factories/FlyingFormations__factory";
-export { Knots__factory } from "./factories/Knots__factory";
