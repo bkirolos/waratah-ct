@@ -58,6 +58,7 @@ export interface FlyingFormationsInterface extends utils.Interface {
     "updateDivisionStWallet(address)": FunctionFragment;
     "updateDucksWallet(address)": FunctionFragment;
     "updateFootballTeamWallet(address)": FunctionFragment;
+    "updatePaused(bool)": FunctionFragment;
     "updateRedeemEnabled(bool)": FunctionFragment;
     "updateRedeemExpired(bool)": FunctionFragment;
     "updateSaleStartsAt(uint256)": FunctionFragment;
@@ -159,6 +160,10 @@ export interface FlyingFormationsInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "updatePaused",
+    values: [boolean]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateRedeemEnabled",
     values: [boolean]
   ): string;
@@ -252,6 +257,10 @@ export interface FlyingFormationsInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateFootballTeamWallet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updatePaused",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -510,6 +519,11 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    updatePaused(
+      _paused: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     updateRedeemEnabled(
       _redeemEnabled: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -657,6 +671,11 @@ export interface FlyingFormations extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updatePaused(
+    _paused: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   updateRedeemEnabled(
     _redeemEnabled: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -795,6 +814,8 @@ export interface FlyingFormations extends BaseContract {
       _wallet: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    updatePaused(_paused: boolean, overrides?: CallOverrides): Promise<void>;
 
     updateRedeemEnabled(
       _redeemEnabled: boolean,
@@ -1026,6 +1047,11 @@ export interface FlyingFormations extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    updatePaused(
+      _paused: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     updateRedeemEnabled(
       _redeemEnabled: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1180,6 +1206,11 @@ export interface FlyingFormations extends BaseContract {
 
     updateFootballTeamWallet(
       _wallet: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updatePaused(
+      _paused: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

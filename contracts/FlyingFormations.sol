@@ -20,8 +20,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import "hardhat/console.sol";
-
 contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     using SafeMath for uint;
     using Strings for uint256;
@@ -102,6 +100,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       // Premint tokens for whitelist token recipients
       for(uint i; i < premintEntries.length; i++){
         _mint(premintEntries[i].addr, premintEntries[i].tokenId);
+        hasPurchased[premintEntries[i].addr] = true;
         sneakerRedeemedBy[premintEntries[i].tokenId] = premintEntries[i].addr;
       }
 
@@ -109,20 +108,6 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       footballTeamWallet = _footballTeamWallet;
       ducksWallet = _ducksWallet;
       divisionStWallet = _divisionStWallet;
-    }
-
-    function getPrice() public view returns (uint) {
-      require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
-
-      uint elapsedTime = block.timestamp - saleStartsAt;
-
-      if (elapsedTime < stage1) {
-        return price1.sub(elapsedTime.mul(priceDeductionRate1));
-      } else if (elapsedTime < stage2) {
-        return price2.sub(elapsedTime.mul(priceDeductionRate2));
-      } else {
-        return floorPrice;
-      }
     }
 
     function buy(address recipient, uint tokenId) public payable {
@@ -134,13 +119,13 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       uint price = getPrice();
       require(msg.value >= price, "FlyingFormations: insufficient funds sent, please check current price");
 
-      // mint token and set hasPurchased[msg.sender] to true so
+      // Mint token and register purchaser so
       // user cannot buy more than one
       _mint(recipient, tokenId);
       hasPurchased[msg.sender] = true;
 
 
-      // distribute funds
+      // Distribute funds to teams
       uint footballTeamReceives = msg.value.mul(TEAM_SPLIT).div(10000);
       uint ducksReceives = msg.value.mul(DUCKS_SPLIT).div(10000);
       uint divisionStReceives = msg.value
@@ -158,6 +143,15 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
     }
 
     // Redeem functionality for claiming Nike Air Max 1 OU Edition
+    //                                   _    _
+    //                                  (_\__/(,_
+    //                                  | \ `_////-._
+    //                      _    _      L_/__ "=> __/`\
+    //                     (_\__/(,_    |=====;__/___./
+    //                     | \ `_////-._'-'-'-""""""`
+    //                     J_/___"=> __/`\
+    //                     |=====;__/___./
+    //                     '-'-'-"""""""`
     function redeem(uint tokenId) public {
       require(redeemEnabled, "FlyingFormations: redeem is currently not enabled");
       require(!redeemExpired, "FlyingFormations: redeem window has expired");
@@ -174,6 +168,22 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       emit SneakerRedeemed(tokenId, msg.sender);
     }
 
+    // ============ PUBLIC VIEW FUNCTIONS ============
+
+    function getPrice() public view returns (uint) {
+      require(block.timestamp >= saleStartsAt, "FlyingFormations: auction has not started");
+
+      uint elapsedTime = block.timestamp - saleStartsAt;
+
+      if (elapsedTime < stage1) {
+        return price1.sub(elapsedTime.mul(priceDeductionRate1));
+      } else if (elapsedTime < stage2) {
+        return price2.sub(elapsedTime.mul(priceDeductionRate2));
+      } else {
+        return floorPrice;
+      }
+    }
+
     function getAllTokens() public view returns (uint[] memory) {
       uint n = totalSupply();
       uint[] memory tokenIds = new uint[](n);
@@ -183,6 +193,19 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       }
       return tokenIds;
     }
+
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+      require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+
+      if (redeemExpired || sneakerRedeemedBy[tokenId] != address(0x0)){
+        return string(abi.encodePacked(standardBaseURI, tokenId.toString(), ".json"));
+      } else {
+        return string(abi.encodePacked(sneakerBaseURI, tokenId.toString(), ".json"));
+      }
+    }
+
+    // ============ OWNER INTERFACE ============
+ 
 
     function updateFootballTeamWallet(address payable _wallet) public onlyOwner {
       footballTeamWallet = _wallet;
@@ -223,14 +246,8 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
         _unpause();
       }
     }
-
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-      require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-
-      if (redeemExpired || sneakerRedeemedBy[tokenId] != address(0x0)){
-        return string(abi.encodePacked(standardBaseURI, tokenId.toString(), ".json"));
-      } else {
-        return string(abi.encodePacked(sneakerBaseURI, tokenId.toString(), ".json"));
-      }
-    }
 }
+
+//////////////////////////////////////////////
+////////contract/by/wurmhumus-fabrik.net//////
+//////////////////////////////////////////////

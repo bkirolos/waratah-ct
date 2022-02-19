@@ -9,5 +9,5 @@ export const Token = {
   abi: {
     rinkeby: TokenRinkeby.abi,
     localhost: TokenLocal.abi,
-  }
+  },
 };

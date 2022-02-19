@@ -163,7 +163,7 @@ describe("FlyingFormations", function () {
       );
     });
 
-    it("only allows redeem to be called by owner of token", async () => {
+    it("only allows redeem to be called by owner of token, and not by others after", async () => {
       const { token, users } = await setup();
 
       // wait until auction starts
@@ -173,10 +173,32 @@ describe("FlyingFormations", function () {
 
       token.updateRedeemEnabled(true);
 
+      users[0].token.redeem(6);
+      expect(await token.ownerOf(6)).to.eq(users[0].address);
+
+      users[0].token.transferFrom(users[0].address, users[1].address, 6);
+
       await expect(users[1].token.redeem(6)).to.be.revertedWith(
-        "FlyingFormations: caller is not owner"
+        "FlyingFormations: token has already beened redeemed"
       );
+
+      expect(await token.sneakerRedeemedBy(6)).to.eq(users[0].address);
     });
+
+    //it("does not allow redeem to be called again by a later owner", async () => {
+    //  const { token, users } = await setup();
+
+    //  // wait until auction starts
+    //  await blockSleep(15);
+    //  let latestPrice = await token.getPrice();
+    //  await users[0].token.buy(users[0].address, 6, { value: latestPrice });
+
+    //  token.updateRedeemEnabled(true);
+
+    //  await expect(users[1].token.redeem(6)).to.be.revertedWith(
+    //    "FlyingFormations: caller is not owner"
+    //  );
+    //});
 
     // it("will not allow users to call owner-only functions", () =>)
     // it("will not allow user to buy at lower price")
