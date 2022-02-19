@@ -7,6 +7,13 @@ dotenv.config();
 
 const pinata = pinataSDK(process.env.PINATA_ID, process.env.PINATA_SECRET);
 
+const descriptionText =
+  'Flying Formations is the first series in the  Ducks of a Feather project.\
+ It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker\
+ Hatfield to benefit University of Oregon Duck Athletes. It represents the\
+ initial offering from "Ducks of A Feather" by Division Street, an ongoing\
+ marketing initiative featuring University of Oregon athletes.';
+
 const getCIDOrPin = async (filename, pinataName) => {
   let cidFile = filename + ".cid";
 
@@ -50,6 +57,7 @@ const readCsvMetadata = (filename) => {
 const generateMetadata = (
   sneakerDirname,
   standardDirname,
+  placeholderDirname,
   imageCID,
   mp4sCID
 ) => {
@@ -59,6 +67,9 @@ const generateMetadata = (
   if (!fs.existsSync(standardDirname)) {
     fs.mkdirSync(standardDirname + "");
   }
+  if (!fs.existsSync(placeholderDirname)) {
+    fs.mkdirSync(placeholderDirname + "");
+  }
 
   let ducks = readCsvMetadata("ipfs/ducks-meta.csv");
 
@@ -67,8 +78,8 @@ const generateMetadata = (
     let formattedDuck = {
       name: `Flying Formations #${i + 1}`,
       image: `ipfs://${imageCID}/${duck["image"]}.png`,
-      animation_url: `https://ducksofafeather.mypinata.cloud/ipfs/${mp4sCID}/${duck["image"]}.mp4`,
-      external_url: "https://ducksofafeather.xyz",
+      animation_url: `ipfs://${mp4sCID}/${duck["image"]}.mp4`,
+      external_url: "https://ducksofafeather.xyz/flyingformations/" + (i + 1),
       background_color: "000000",
       attributes: [
         {
@@ -83,7 +94,8 @@ const generateMetadata = (
     };
     let sneakerDuck = { ...formattedDuck };
     sneakerDuck.description =
-      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.\\n\\nFeaturing a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.';
+      descriptionText +
+      " Featuring a complementary pair of Air Max 1 UO Edition sneakers designed by Tinker.";
     sneakerDuck.attributes = sneakerDuck.attributes.concat([
       {
         trait_type: "Shoe Size",
@@ -96,8 +108,7 @@ const generateMetadata = (
     ]);
 
     let standardDuck = { ...formattedDuck };
-    standardDuck.description =
-      'Flying Formations is the first series in the  Ducks of a Feather project. It is a limited-edition series of 120 one-of-a-kind NFTs created by Tinker Hatfield to benefit University of Oregon Duck Athletes. It represents the initial offering from "Ducks of A Feather" by Division Street, an ongoing marketing initiative featuring University of Oregon athletes.';
+    standardDuck.description = descriptionText;
     standardDuck.attributes = standardDuck.attributes.concat([
       {
         trait_type: "Shoe Size",
@@ -105,9 +116,15 @@ const generateMetadata = (
       },
       {
         trait_type: "Air Max 1",
-        value: "REDEEMED",
+        value: "UNAVAILABLE",
       },
     ]);
+
+    let placeholderDuck = {
+      name: `Flying Formations #${i + 1}`,
+      description: descriptionText,
+      image: "ipfs://QmS1nZqnb4JgTSXSia9NHAaMyJ7xidTR3xySKEUTtQVDn2",
+    };
 
     // write metadata for sneaker duck
     fs.writeFileSync(
@@ -120,6 +137,12 @@ const generateMetadata = (
       `${standardMetadataDir}/${i + 1}.json`,
       JSON.stringify(standardDuck)
     );
+
+    // write metadata for placeholder duck
+    fs.writeFileSync(
+      `${placeholderDir}/${i + 1}.json`,
+      JSON.stringify(placeholderDuck)
+    );
   });
 };
 
@@ -128,6 +151,14 @@ let mp4sCID = await getCIDOrPin("ipfs/mp4s", "Duck MP4s");
 
 let sneakerMetadataDir = "ipfs/metadata-sneaker";
 let standardMetadataDir = "ipfs/metadata-standard";
-generateMetadata(sneakerMetadataDir, standardMetadataDir, pngsCID, mp4sCID);
+let placeholderDir = "ipfs/metadata-placeholder";
+generateMetadata(
+  sneakerMetadataDir,
+  standardMetadataDir,
+  placeholderDir,
+  pngsCID,
+  mp4sCID
+);
+await getCIDOrPin(placeholderDir, "Duck Placeholder Metadata");
 await getCIDOrPin(sneakerMetadataDir, "Duck Sneaker Metadata");
 await getCIDOrPin(standardMetadataDir, "Duck Standard Metadata");
