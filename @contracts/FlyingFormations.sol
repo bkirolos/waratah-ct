@@ -177,8 +177,8 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
       if (elapsedTime < stage1) {
         return price1.sub(elapsedTime.mul(priceDeductionRate1));
-      } else if (elapsedTime < stage2) {
-        return price2.sub(elapsedTime.mul(priceDeductionRate2));
+      } else if (elapsedTime < stage1 + stage2) {
+        return price2.sub((elapsedTime.sub(stage1)).mul(priceDeductionRate2));
       } else {
         return floorPrice;
       }

@@ -15,6 +15,10 @@ const { parseUnits } = ethers.utils;
 
 const { expect } = chai;
 
+// variable multiplier for auction timing
+// should correspond with "hrs" variable in smart contract
+const MINUTES_MULTIPLIER = 5;
+
 const setup = deployments.createFixture(async () => {
   await deployments.fixture("FlyingFormations");
   const { deployer } = await getNamedAccounts();
@@ -32,6 +36,29 @@ const setup = deployments.createFixture(async () => {
 describe("FlyingFormations", function () {
   this.timeout(30000);
   describe("auction & basic minting", async () => {
+    it("Should exactly match expected price points at points in time", async () => {
+      const { deployer, token } = await setup();
+
+      let blockTime = await latestBlocktime();
+      let startTime = blockTime + 100 * MINUTES_MULTIPLIER;
+      console.log("Setting start time: " + startTime);
+      await token.updateSaleStartsAt(startTime);
+
+      await expect(token.getPrice()).to.be.revertedWith(
+        "FlyingFormations: auction has not started"
+      );
+
+      await blockSleep(100 * MINUTES_MULTIPLIER - 1);
+      console.log(await latestBlocktime());
+      expect(utils.formatEther(await token.getPrice())).to.eq("0.125");
+      await blockSleep(180 * MINUTES_MULTIPLIER);
+      expect(utils.formatEther(await token.getPrice())).to.eq("0.05");
+      await blockSleep(540 * MINUTES_MULTIPLIER);
+      expect(utils.formatEther(await token.getPrice())).to.eq("0.01");
+      await blockSleep(1000 * MINUTES_MULTIPLIER);
+      expect(utils.formatEther(await token.getPrice())).to.eq("0.01");
+    });
+
     it("should have minted 0 team tokens to the deployer, 3 tokens in total", async () => {
       const { deployer, token } = await setup();
 
@@ -50,19 +77,19 @@ describe("FlyingFormations", function () {
       );
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
       console.log("       Latest price: %s", latestPrice);
 
       expect(latestPrice.gte(ethers.BigNumber.from(0))).to.be.true;
 
-      await blockSleep(1);
+      await blockSleepMult(1);
       let prevPrice = latestPrice;
       latestPrice = await token.getPrice();
       console.log("       Latest price: %s", latestPrice);
       let latestDeductionRate = latestPrice.sub(prevPrice);
 
-      await blockSleep(1);
+      await blockSleepMult(1);
       prevPrice = latestPrice;
       latestPrice = await token.getPrice();
       console.log("       Latest price: %s", latestPrice);
@@ -71,24 +98,24 @@ describe("FlyingFormations", function () {
       latestDeductionRate = latestPrice.sub(prevPrice);
       expect(latestDeductionRate).to.equal(prevDeductionRate);
 
-      await blockSleep(120);
+      await blockSleepMult(120);
       prevPrice = await token.getPrice();
-      await blockSleep(1);
+      await blockSleepMult(1);
       latestPrice = await token.getPrice();
       console.log("       Latest price: %s", latestPrice);
       latestDeductionRate = latestPrice.sub(prevPrice);
       expect(latestDeductionRate.gte(prevDeductionRate)).to.be.true;
 
       // stops decreasing when it hits the floor
-      await blockSleep(1000);
+      await blockSleepMult(1000);
       let floorPrice = await token.getPrice();
       console.log("       Floor price: %s", floorPrice);
 
-      await blockSleep(2000);
+      await blockSleepMult(2000);
       latestPrice = await token.getPrice();
       expect(latestPrice).to.equal(floorPrice);
 
-      await blockSleep(3000);
+      await blockSleepMult(3000);
       latestPrice = await token.getPrice();
       expect(latestPrice).to.equal(floorPrice);
     });
@@ -97,7 +124,7 @@ describe("FlyingFormations", function () {
       const { token, deployer } = await setup();
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
 
       await token.buy(deployer.address, 112, { value: latestPrice });
@@ -115,7 +142,7 @@ describe("FlyingFormations", function () {
       const { deployer, token, users } = await setup();
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
 
       await users[0].token.buy(users[0].address, 22, { value: latestPrice });
@@ -132,7 +159,7 @@ describe("FlyingFormations", function () {
       const { token, users } = await setup();
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
 
       await expect(
@@ -154,7 +181,7 @@ describe("FlyingFormations", function () {
       const { token, users } = await setup();
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
       await users[1].token.buy(users[1].address, 6, { value: latestPrice });
 
@@ -167,7 +194,7 @@ describe("FlyingFormations", function () {
       const { token, users } = await setup();
 
       // wait until auction starts
-      await blockSleep(15);
+      await blockSleepMult(15);
       let latestPrice = await token.getPrice();
       await users[0].token.buy(users[0].address, 6, { value: latestPrice });
       await users[1].token.buy(users[0].address, 7, { value: latestPrice });
@@ -194,7 +221,7 @@ describe("FlyingFormations", function () {
     //  const { token, users } = await setup();
 
     //  // wait until auction starts
-    //  await blockSleep(15);
+    //  await blockSleepMult(15);
     //  let latestPrice = await token.getPrice();
     //  await users[0].token.buy(users[0].address, 6, { value: latestPrice });
 
@@ -214,9 +241,21 @@ describe("FlyingFormations", function () {
 });
 
 async function blockSleep(s: number) {
-  const MINUTES_MULTIPLIER = 5;
-  s = s * MINUTES_MULTIPLIER;
+  //s = s * MINUTES_MULTIPLIER - 1;
   const blockNumBefore = await ethers.provider.getBlockNumber();
   const blockBefore = await ethers.provider.getBlock(blockNumBefore);
   await ethers.provider.send("evm_mine", [blockBefore.timestamp + s]);
+}
+
+async function blockSleepMult(s: number) {
+  s = s * MINUTES_MULTIPLIER - 1;
+  const blockNumBefore = await ethers.provider.getBlockNumber();
+  const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  await ethers.provider.send("evm_mine", [blockBefore.timestamp + s]);
+}
+
+async function latestBlocktime() {
+  const blockNumBefore = await ethers.provider.getBlockNumber();
+  const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  return blockBefore.timestamp;
 }
