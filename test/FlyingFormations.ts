@@ -8,7 +8,7 @@ import chai from "chai";
 import { FlyingFormations } from "../typechain-types/FlyingFormations";
 import FlyingFormationsArtifact from "../artifacts/@contracts/FlyingFormations.sol/FlyingFormations.json";
 import { deployContract } from "ethereum-waffle";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { setupUser, setupUsers } from "./utils";
 
 const { parseUnits } = ethers.utils;
@@ -17,11 +17,12 @@ const { expect } = chai;
 
 // variable multiplier for auction timing
 // should correspond with "hrs" variable in smart contract
-const MINUTES_MULTIPLIER = 5;
+const MINUTES_MULTIPLIER = 60;
 
 const setup = deployments.createFixture(async () => {
   await deployments.fixture("FlyingFormations");
-  const { deployer } = await getNamedAccounts();
+  const { deployer, footballTeamWallet, ducksWallet, divisionStWallet } =
+    await getNamedAccounts();
   const contracts = {
     token: <FlyingFormations>await ethers.getContract("FlyingFormations"),
   };
@@ -30,6 +31,9 @@ const setup = deployments.createFixture(async () => {
     ...contracts,
     users,
     deployer: await setupUser(deployer, contracts),
+    divisionStWallet: await setupUser(divisionStWallet, contracts),
+    footballTeamWallet: await setupUser(footballTeamWallet, contracts),
+    ducksWallet: await setupUser(ducksWallet, contracts),
   };
 });
 
@@ -50,13 +54,13 @@ describe("FlyingFormations", function () {
 
       await blockSleep(100 * MINUTES_MULTIPLIER - 1);
       console.log(await latestBlocktime());
-      expect(utils.formatEther(await token.getPrice())).to.eq("0.125");
+      expect(utils.formatEther(await token.getPrice())).to.eq("12.5");
       await blockSleep(180 * MINUTES_MULTIPLIER);
-      expect(utils.formatEther(await token.getPrice())).to.eq("0.05");
+      expect(utils.formatEther(await token.getPrice())).to.eq("5.0");
       await blockSleep(540 * MINUTES_MULTIPLIER);
-      expect(utils.formatEther(await token.getPrice())).to.eq("0.01");
+      expect(utils.formatEther(await token.getPrice())).to.eq("1.0");
       await blockSleep(1000 * MINUTES_MULTIPLIER);
-      expect(utils.formatEther(await token.getPrice())).to.eq("0.01");
+      expect(utils.formatEther(await token.getPrice())).to.eq("1.0");
     });
 
     it("should have minted 0 team tokens to the deployer, 3 tokens in total", async () => {
@@ -153,6 +157,64 @@ describe("FlyingFormations", function () {
       await expect(
         users[0].token.buy(users[0].address, 23, { value: latestPrice })
       ).to.be.revertedWith("FlyingFormations: User has already bought one NFT");
+    });
+
+    it("will distribute funds appropriately", async () => {
+      const {
+        deployer,
+        token,
+        footballTeamWallet,
+        divisionStWallet,
+        ducksWallet,
+      } = await setup();
+      let initFbBal = await ethers.provider.getBalance(
+        footballTeamWallet.address
+      );
+      let initDsBal = await ethers.provider.getBalance(
+        divisionStWallet.address
+      );
+      let initDucksBal = await ethers.provider.getBalance(ducksWallet.address);
+
+      // wait until auction starts
+      await blockSleepMult(15);
+      let latestPrice = await token.getPrice();
+      token.buy(deployer.address, 55, { value: latestPrice });
+
+      let fbReceives = (
+        await ethers.provider.getBalance(footballTeamWallet.address)
+      ).sub(initFbBal);
+      let dsReceives = (
+        await ethers.provider.getBalance(divisionStWallet.address)
+      ).sub(initDsBal);
+      let ducksReceives = (
+        await ethers.provider.getBalance(ducksWallet.address)
+      ).sub(initDucksBal);
+
+      // check ducks balance
+      expect(ducksReceives.mul(10000).div(latestPrice)).to.gte(
+        BigNumber.from(999)
+      );
+      expect(ducksReceives.mul(10000).div(latestPrice)).to.lte(
+        BigNumber.from(1001)
+      );
+
+      // check fb balance
+      expect(fbReceives.mul(10000).div(latestPrice)).to.gte(
+        BigNumber.from(6749)
+      );
+      expect(fbReceives.mul(10000).div(latestPrice)).to.lte(
+        BigNumber.from(6751)
+      );
+
+      // check ds balance
+      expect(dsReceives.mul(10000).div(latestPrice)).to.gte(
+        BigNumber.from(2249)
+      );
+      expect(dsReceives.mul(10000).div(latestPrice)).to.lte(
+        BigNumber.from(2251)
+      );
+
+      expect(dsReceives.add(ducksReceives).add(fbReceives)).to.eq(latestPrice);
     });
 
     it("will not mint token ids out of bounds", async () => {

@@ -13,7 +13,7 @@ async function main() {
     "FlyingFormations"
   )) as FlyingFormations;
 
-  let startTime = 1645327800;
+  let startTime = 1645336500;
 
   await token.updateSaleStartsAt(startTime);
   logDeployInfo(startTime);

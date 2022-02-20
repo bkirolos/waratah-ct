@@ -33,18 +33,15 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       uint divisionStReceives
     );
 
-    event SneakerRedeemed(
+    event AirMax1Redeemed(
       uint tokenId,
       address recipient
     );
 
-    // uint eth = 1e18 // WETH
-    // uint hrs = 1 hours; // HOURS (in seconds)
+    uint constant eth = 1e18; // WETH
+    uint constant hrs = 1 hours; // HOURS (in seconds)
 
-    // SMALLER AMOUNT & SHORTER DURATION FOR TESTING
-    uint constant eth = 1e16; // WETH
-    uint constant hrs = 5 minutes; // HOURS (in seconds)
-
+    
     uint constant price1 = 125*eth/10; // 12.5 ETH
     uint constant stage1 = 3*hrs; // 3 hours
 
@@ -165,7 +162,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       );
 
       sneakerRedeemedBy[tokenId] = ownerOf(tokenId);
-      emit SneakerRedeemed(tokenId, msg.sender);
+      emit AirMax1Redeemed(tokenId, msg.sender);
     }
 
     // ============ PUBLIC VIEW FUNCTIONS ============
@@ -247,7 +244,3 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
       }
     }
 }
-
-//////////////////////////////////////////////
-////////contract/by/wurmhumus-fabrik.net//////
-//////////////////////////////////////////////

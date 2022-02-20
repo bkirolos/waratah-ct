@@ -281,25 +281,32 @@ export interface FlyingFormationsInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "AirMax1Redeemed(uint256,address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
-    "SneakerRedeemed(uint256,address)": EventFragment;
     "TokenBought(uint256,address,uint256,uint256,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AirMax1Redeemed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SneakerRedeemed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenBought"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
+
+export type AirMax1RedeemedEvent = TypedEvent<
+  [BigNumber, string],
+  { tokenId: BigNumber; recipient: string }
+>;
+
+export type AirMax1RedeemedEventFilter = TypedEventFilter<AirMax1RedeemedEvent>;
 
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber],
@@ -326,13 +333,6 @@ export type OwnershipTransferredEventFilter =
 export type PausedEvent = TypedEvent<[string], { account: string }>;
 
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
-
-export type SneakerRedeemedEvent = TypedEvent<
-  [BigNumber, string],
-  { tokenId: BigNumber; recipient: string }
->;
-
-export type SneakerRedeemedEventFilter = TypedEventFilter<SneakerRedeemedEvent>;
 
 export type TokenBoughtEvent = TypedEvent<
   [BigNumber, string, BigNumber, BigNumber, BigNumber, BigNumber],
@@ -839,6 +839,15 @@ export interface FlyingFormations extends BaseContract {
   };
 
   filters: {
+    "AirMax1Redeemed(uint256,address)"(
+      tokenId?: null,
+      recipient?: null
+    ): AirMax1RedeemedEventFilter;
+    AirMax1Redeemed(
+      tokenId?: null,
+      recipient?: null
+    ): AirMax1RedeemedEventFilter;
+
     "Approval(address,address,uint256)"(
       owner?: string | null,
       approved?: string | null,
@@ -872,15 +881,6 @@ export interface FlyingFormations extends BaseContract {
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
-
-    "SneakerRedeemed(uint256,address)"(
-      tokenId?: null,
-      recipient?: null
-    ): SneakerRedeemedEventFilter;
-    SneakerRedeemed(
-      tokenId?: null,
-      recipient?: null
-    ): SneakerRedeemedEventFilter;
 
     "TokenBought(uint256,address,uint256,uint256,uint256,uint256)"(
       tokenId?: null,
