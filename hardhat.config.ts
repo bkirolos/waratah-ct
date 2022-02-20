@@ -38,6 +38,10 @@ const config: HardhatUserConfig = {
     // Obtain one at https://etherscan.io/
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
+  paths: {
+    sources: "./@contracts",
+  },
+
   namedAccounts: {
     deployer: 0,
     footballTeamWallet: 1,

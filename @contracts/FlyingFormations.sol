@@ -43,7 +43,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     // SMALLER AMOUNT & SHORTER DURATION FOR TESTING
     uint constant eth = 1e16; // WETH
-    uint constant hrs = 1 minutes; // HOURS (in seconds)
+    uint constant hrs = 5 minutes; // HOURS (in seconds)
 
     uint constant price1 = 125*eth/10; // 12.5 ETH
     uint constant stage1 = 3*hrs; // 3 hours
@@ -53,7 +53,7 @@ contract FlyingFormations is ERC721Enumerable, Ownable, Pausable {
 
     uint constant floorPrice = 1*eth; // 1 ETH
 
-    uint constant priceDeductionRate1 = (price1 - price2)/stage1; // drop to 5.0 ETH at 2 hours
+    uint constant priceDeductionRate1 = (price1 - price2)/stage1; // drop to 5.0 ETH at 3 hours
     uint constant priceDeductionRate2 = (price2 - floorPrice)/stage2; // drop to 1.0 ETH at 12 hours
 
     mapping (address => bool) hasPurchased;

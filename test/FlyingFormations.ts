@@ -6,7 +6,7 @@ import {
 } from "hardhat";
 import chai from "chai";
 import { FlyingFormations } from "../typechain-types/FlyingFormations";
-import FlyingFormationsArtifact from "../artifacts/contracts/FlyingFormations.sol/FlyingFormations.json";
+import FlyingFormationsArtifact from "../artifacts/@contracts/FlyingFormations.sol/FlyingFormations.json";
 import { deployContract } from "ethereum-waffle";
 import { utils } from "ethers";
 import { setupUser, setupUsers } from "./utils";
@@ -170,6 +170,7 @@ describe("FlyingFormations", function () {
       await blockSleep(15);
       let latestPrice = await token.getPrice();
       await users[0].token.buy(users[0].address, 6, { value: latestPrice });
+      await users[1].token.buy(users[0].address, 7, { value: latestPrice });
 
       token.updateRedeemEnabled(true);
 
@@ -183,6 +184,10 @@ describe("FlyingFormations", function () {
       );
 
       expect(await token.sneakerRedeemedBy(6)).to.eq(users[0].address);
+
+      expect(await token.tokenURI(6)).to.eq("ipfs://standard_base_uri/6.json");
+      expect(await token.tokenURI(7)).to.eq("ipfs://sneaker_base_uri/7.json");
+      expect(await token.tokenURI(5)).to.eq("ipfs://standard_base_uri/5.json");
     });
 
     //it("does not allow redeem to be called again by a later owner", async () => {
@@ -208,8 +213,10 @@ describe("FlyingFormations", function () {
   });
 });
 
-async function blockSleep(ms: number) {
+async function blockSleep(s: number) {
+  const MINUTES_MULTIPLIER = 5;
+  s = s * MINUTES_MULTIPLIER;
   const blockNumBefore = await ethers.provider.getBlockNumber();
   const blockBefore = await ethers.provider.getBlock(blockNumBefore);
-  await ethers.provider.send("evm_mine", [blockBefore.timestamp + ms]);
+  await ethers.provider.send("evm_mine", [blockBefore.timestamp + s]);
 }

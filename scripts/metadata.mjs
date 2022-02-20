@@ -77,7 +77,7 @@ const generateMetadata = (
   ducks.forEach(function (duck, i) {
     let formattedDuck = {
       name: `Flying Formations #${i + 1}`,
-      image: `ipfs://${imageCID}/${duck["image"]}.png`,
+      image: `https://ipfs.ducksofafeather.xyz/ipfs/${imageCID}/${duck["image"]}.png`,
       animation_url: `ipfs://${mp4sCID}/${duck["image"]}.mp4`,
       external_url: "https://ducksofafeather.xyz/flyingformations/" + (i + 1),
       background_color: "000000",
@@ -99,7 +99,7 @@ const generateMetadata = (
     sneakerDuck.attributes = sneakerDuck.attributes.concat([
       {
         trait_type: "Shoe Size",
-        value: duck["shoe size"],
+        value: "M " + duck["shoe size"],
       },
       {
         trait_type: "Air Max 1",
@@ -111,10 +111,6 @@ const generateMetadata = (
     standardDuck.description = descriptionText;
     standardDuck.attributes = standardDuck.attributes.concat([
       {
-        trait_type: "Shoe Size",
-        value: duck["shoe size"],
-      },
-      {
         trait_type: "Air Max 1",
         value: "UNAVAILABLE",
       },
@@ -123,7 +119,8 @@ const generateMetadata = (
     let placeholderDuck = {
       name: `Flying Formations #${i + 1}`,
       description: descriptionText,
-      image: "ipfs://QmS1nZqnb4JgTSXSia9NHAaMyJ7xidTR3xySKEUTtQVDn2",
+      image:
+        "https://ipfs.ducksofafeather.xyz/ipfs/QmS1nZqnb4JgTSXSia9NHAaMyJ7xidTR3xySKEUTtQVDn2",
     };
 
     // write metadata for sneaker duck
