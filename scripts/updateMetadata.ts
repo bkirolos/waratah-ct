@@ -32,7 +32,7 @@ async function main() {
 
   for (const tokenId of tokenIds) {
     console.log(" . Refreshing OpenSea metadata for token #" + tokenId);
-    let url = `https://testnets-api.opensea.io/api/v1/asset/${token.address}/${tokenId}/?force_update=true`;
+    let url = `https://api.opensea.io/api/v1/asset/${token.address}/${tokenId}/?force_update=true`;
     try {
       let res = await axios.get(url);
 
